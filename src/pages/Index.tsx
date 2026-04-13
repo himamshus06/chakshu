@@ -47,44 +47,59 @@ const Index = () => {
   const saveEvents = async (events: any[]) => {
     if (!user) return;
     try {
-      for (const event of events) {
-        await supabase.from("events").insert({ ...event, user_id: user.id });
-      }
+      const rows = events.map(event => ({
+        name: event.name,
+        date: event.date || null,
+        time: event.time || null,
+        location: event.location || null,
+        description: event.description || null,
+        user_id: user.id,
+      }));
+      const { error } = await supabase.from("events").insert(rows);
+      if (error) throw error;
       toast.success("Events saved!");
       setResult(null);
       setShowDashboard(true);
       queryClient.invalidateQueries({ queryKey: ["events"] });
-    } catch { toast.error("Failed to save"); }
+    } catch (err: any) { toast.error(err.message || "Failed to save"); }
   };
 
   const saveContacts = async (contacts: any[]) => {
     if (!user) return;
     try {
-      for (const contact of contacts) {
-        await supabase.from("contacts").insert({ ...contact, user_id: user.id });
-      }
+      const rows = contacts.map(contact => ({
+        name: contact.name,
+        phone: contact.phone || null,
+        email: contact.email || null,
+        company: contact.company || null,
+        title: contact.title || null,
+        user_id: user.id,
+      }));
+      const { error } = await supabase.from("contacts").insert(rows);
+      if (error) throw error;
       toast.success("Contacts saved!");
       setResult(null);
       setShowDashboard(true);
       queryClient.invalidateQueries({ queryKey: ["contacts"] });
-    } catch { toast.error("Failed to save"); }
+    } catch (err: any) { toast.error(err.message || "Failed to save"); }
   };
 
   const saveNote = async (data: any) => {
     if (!user) return;
     try {
-      await supabase.from("notes").insert({
+      const { error } = await supabase.from("notes").insert({
         title: data.title,
         summary: data.summary,
         key_facts: data.key_facts,
         tags: data.tags,
         user_id: user.id,
       });
+      if (error) throw error;
       toast.success("Note saved!");
       setResult(null);
       setShowDashboard(true);
       queryClient.invalidateQueries({ queryKey: ["notes"] });
-    } catch { toast.error("Failed to save"); }
+    } catch (err: any) { toast.error(err.message || "Failed to save"); }
   };
 
   const overrideClassification = (newClass: "event" | "contact" | "general") => {
