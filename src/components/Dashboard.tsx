@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, User, FileText, Trash2, ChevronDown, Pencil, Check, X, Download } from "lucide-react";
+import { Calendar, User, FileText, Trash2, ChevronDown, Pencil, Check, X, Download, FileDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -38,8 +38,22 @@ function ExpandableCard({ children, preview }: { children: React.ReactNode; prev
   );
 }
 
-function downloadJSON(data: any, filename: string) {
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+function generateNoteHTML(note: any) {
+  const facts = (note.key_facts as string[] || []).map(f => `<li>${f}</li>`).join("");
+  const tags = (note.tags as string[] || []).map(t => `<span style="background:#e2e8f0;padding:2px 8px;border-radius:12px;font-size:12px;margin-right:4px">${t}</span>`).join("");
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${note.title || "Note"}</title><style>body{font-family:system-ui,sans-serif;max-width:640px;margin:40px auto;padding:0 20px;color:#1a1a2e}h1{margin-bottom:8px}p{line-height:1.6}.tags{margin-top:16px}.facts{padding-left:20px}li{margin-bottom:4px}.meta{color:#888;font-size:12px;margin-top:24px}</style></head><body><h1>${note.title}</h1>${note.summary ? `<p>${note.summary}</p>` : ""}${facts ? `<h3>Key Facts</h3><ul class="facts">${facts}</ul>` : ""}${tags ? `<div class="tags">${tags}</div>` : ""}<p class="meta">Created: ${new Date(note.created_at).toLocaleDateString()}</p></body></html>`;
+}
+
+function generateEventHTML(event: any) {
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${event.name || "Event"}</title><style>body{font-family:system-ui,sans-serif;max-width:640px;margin:40px auto;padding:0 20px;color:#1a1a2e}h1{margin-bottom:8px}.detail{margin:4px 0;font-size:15px}.meta{color:#888;font-size:12px;margin-top:24px}</style></head><body><h1>${event.name}</h1>${event.date ? `<p class="detail">📅 ${event.date}</p>` : ""}${event.time ? `<p class="detail">⏰ ${event.time}</p>` : ""}${event.location ? `<p class="detail">📍 ${event.location}</p>` : ""}${event.description ? `<p>${event.description}</p>` : ""}<p class="meta">Created: ${new Date(event.created_at).toLocaleDateString()}</p></body></html>`;
+}
+
+function generateContactHTML(contact: any) {
+  return `<!DOCTYPE html><html><head><meta charset="utf-8"><title>${contact.name || "Contact"}</title><style>body{font-family:system-ui,sans-serif;max-width:640px;margin:40px auto;padding:0 20px;color:#1a1a2e}h1{margin-bottom:4px}.subtitle{color:#666;margin-bottom:16px}.detail{margin:4px 0;font-size:15px}.meta{color:#888;font-size:12px;margin-top:24px}</style></head><body><h1>${contact.name}</h1><p class="subtitle">${[contact.title, contact.company].filter(Boolean).join(" · ")}</p>${contact.phone ? `<p class="detail">📞 ${contact.phone}</p>` : ""}${contact.email ? `<p class="detail">✉️ ${contact.email}</p>` : ""}${contact.company ? `<p class="detail">🏢 ${contact.company}</p>` : ""}<p class="meta">Created: ${new Date(contact.created_at).toLocaleDateString()}</p></body></html>`;
+}
+
+function downloadHTML(html: string, filename: string) {
+  const blob = new Blob([html], { type: "text/html" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
@@ -48,27 +62,12 @@ function downloadJSON(data: any, filename: string) {
   URL.revokeObjectURL(url);
 }
 
-function downloadVCard(contact: any) {
-  const vcard = `BEGIN:VCARD\nVERSION:3.0\nFN:${contact.name || ""}\nORG:${contact.company || ""}\nTITLE:${contact.title || ""}\nTEL:${contact.phone || ""}\nEMAIL:${contact.email || ""}\nEND:VCARD`;
-  const blob = new Blob([vcard], { type: "text/vcard" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `${(contact.name || "contact").replace(/\s+/g, "_")}.vcf`;
-  a.click();
-  URL.revokeObjectURL(url);
-}
-
-function downloadICS(event: any) {
-  const startDate = (event.date || "").replace(/-/g, "");
-  const ics = `BEGIN:VCALENDAR\nVERSION:2.0\nBEGIN:VEVENT\nSUMMARY:${event.name || ""}\nDTSTART:${startDate}\nLOCATION:${event.location || ""}\nDESCRIPTION:${event.description || ""}\nEND:VEVENT\nEND:VCALENDAR`;
-  const blob = new Blob([ics], { type: "text/calendar" });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement("a");
-  a.href = url;
-  a.download = `${(event.name || "event").replace(/\s+/g, "_")}.ics`;
-  a.click();
-  URL.revokeObjectURL(url);
+function downloadPDF(html: string, filename: string) {
+  const win = window.open("", "_blank");
+  if (!win) return;
+  win.document.write(html);
+  win.document.close();
+  setTimeout(() => { win.print(); }, 400);
 }
 
 export function Dashboard() {
@@ -217,7 +216,8 @@ function NoteCard({ note, onDelete, onUpdate }: { note: any; onDelete: () => voi
             <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{note.summary}</p>
           </div>
           <div className="flex gap-1">
-            <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); downloadJSON({ title: note.title, summary: note.summary, key_facts: note.key_facts, tags: note.tags }, `${note.title || "note"}.json`); }} className="text-muted-foreground"><Download className="w-3.5 h-3.5" /></Button>
+            <Button size="sm" variant="ghost" title="Download PDF" onClick={(e) => { e.stopPropagation(); downloadPDF(generateNoteHTML(note), `${note.title || "note"}.pdf`); }} className="text-muted-foreground"><FileDown className="w-3.5 h-3.5" /></Button>
+            <Button size="sm" variant="ghost" title="Download HTML" onClick={(e) => { e.stopPropagation(); downloadHTML(generateNoteHTML(note), `${(note.title || "note").replace(/\s+/g, "_")}.html`); }} className="text-muted-foreground"><Download className="w-3.5 h-3.5" /></Button>
             <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); onDelete(); }} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-3.5 h-3.5" /></Button>
           </div>
         </div>
@@ -280,7 +280,8 @@ function EventCard({ event, onDelete, onUpdate }: { event: any; onDelete: () => 
             </div>
           </div>
           <div className="flex gap-1">
-            <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); downloadICS(event); }} className="text-muted-foreground"><Download className="w-3.5 h-3.5" /></Button>
+            <Button size="sm" variant="ghost" title="Download PDF" onClick={(e) => { e.stopPropagation(); downloadPDF(generateEventHTML(event), `${event.name || "event"}.pdf`); }} className="text-muted-foreground"><FileDown className="w-3.5 h-3.5" /></Button>
+            <Button size="sm" variant="ghost" title="Download HTML" onClick={(e) => { e.stopPropagation(); downloadHTML(generateEventHTML(event), `${(event.name || "event").replace(/\s+/g, "_")}.html`); }} className="text-muted-foreground"><Download className="w-3.5 h-3.5" /></Button>
             <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); onDelete(); }} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-3.5 h-3.5" /></Button>
           </div>
         </div>
@@ -334,7 +335,8 @@ function ContactCard({ contact, onDelete, onUpdate }: { contact: any; onDelete: 
             </div>
           </div>
           <div className="flex gap-1">
-            <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); downloadVCard(contact); }} className="text-muted-foreground"><Download className="w-3.5 h-3.5" /></Button>
+            <Button size="sm" variant="ghost" title="Download PDF" onClick={(e) => { e.stopPropagation(); downloadPDF(generateContactHTML(contact), `${contact.name || "contact"}.pdf`); }} className="text-muted-foreground"><FileDown className="w-3.5 h-3.5" /></Button>
+            <Button size="sm" variant="ghost" title="Download HTML" onClick={(e) => { e.stopPropagation(); downloadHTML(generateContactHTML(contact), `${(contact.name || "contact").replace(/\s+/g, "_")}.html`); }} className="text-muted-foreground"><Download className="w-3.5 h-3.5" /></Button>
             <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); onDelete(); }} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-3.5 h-3.5" /></Button>
           </div>
         </div>
