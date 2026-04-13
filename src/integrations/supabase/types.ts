@@ -14,7 +14,180 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      analyses: {
+        Row: {
+          classification: string
+          confidence: number | null
+          created_at: string
+          id: string
+          image_data: string | null
+          image_url: string | null
+          raw_result: Json | null
+          user_id: string | null
+        }
+        Insert: {
+          classification: string
+          confidence?: number | null
+          created_at?: string
+          id?: string
+          image_data?: string | null
+          image_url?: string | null
+          raw_result?: Json | null
+          user_id?: string | null
+        }
+        Update: {
+          classification?: string
+          confidence?: number | null
+          created_at?: string
+          id?: string
+          image_data?: string | null
+          image_url?: string | null
+          raw_result?: Json | null
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      contacts: {
+        Row: {
+          analysis_id: string | null
+          company: string | null
+          created_at: string
+          email: string | null
+          id: string
+          name: string
+          phone: string | null
+          raw_text: string | null
+          title: string | null
+          user_id: string | null
+        }
+        Insert: {
+          analysis_id?: string | null
+          company?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name: string
+          phone?: string | null
+          raw_text?: string | null
+          title?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          analysis_id?: string | null
+          company?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          name?: string
+          phone?: string | null
+          raw_text?: string | null
+          title?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "contacts_analysis_id_fkey"
+            columns: ["analysis_id"]
+            isOneToOne: false
+            referencedRelation: "analyses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      events: {
+        Row: {
+          analysis_id: string | null
+          created_at: string
+          date: string | null
+          description: string | null
+          id: string
+          location: string | null
+          name: string
+          reminder_set: boolean | null
+          time: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          analysis_id?: string | null
+          created_at?: string
+          date?: string | null
+          description?: string | null
+          id?: string
+          location?: string | null
+          name: string
+          reminder_set?: boolean | null
+          time?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          analysis_id?: string | null
+          created_at?: string
+          date?: string | null
+          description?: string | null
+          id?: string
+          location?: string | null
+          name?: string
+          reminder_set?: boolean | null
+          time?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "events_analysis_id_fkey"
+            columns: ["analysis_id"]
+            isOneToOne: false
+            referencedRelation: "analyses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notes: {
+        Row: {
+          analysis_id: string | null
+          created_at: string
+          id: string
+          key_facts: Json | null
+          summary: string | null
+          tags: string[] | null
+          title: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          analysis_id?: string | null
+          created_at?: string
+          id?: string
+          key_facts?: Json | null
+          summary?: string | null
+          tags?: string[] | null
+          title: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          analysis_id?: string | null
+          created_at?: string
+          id?: string
+          key_facts?: Json | null
+          summary?: string | null
+          tags?: string[] | null
+          title?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notes_analysis_id_fkey"
+            columns: ["analysis_id"]
+            isOneToOne: false
+            referencedRelation: "analyses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
