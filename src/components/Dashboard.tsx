@@ -1,5 +1,6 @@
-import { motion } from "framer-motion";
-import { Calendar, User, FileText, Trash2 } from "lucide-react";
+import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Calendar, User, FileText, Trash2, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -7,6 +8,33 @@ import { supabase } from "@/integrations/supabase/client";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/hooks/useAuth";
 import { toast } from "sonner";
+
+function ExpandableCard({ children, preview }: { children: React.ReactNode; preview: React.ReactNode }) {
+  const [expanded, setExpanded] = useState(false);
+  return (
+    <div className="glass-card p-4 hover-lift cursor-pointer" onClick={() => setExpanded(!expanded)}>
+      {preview}
+      <AnimatePresence>
+        {expanded && (
+          <motion.div
+            initial={{ height: 0, opacity: 0 }}
+            animate={{ height: "auto", opacity: 1 }}
+            exit={{ height: 0, opacity: 0 }}
+            transition={{ duration: 0.2 }}
+            className="overflow-hidden"
+          >
+            <div className="pt-3 border-t border-border/50 mt-3">
+              {children}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+      <div className="flex justify-center mt-2">
+        <ChevronDown className={`w-4 h-4 text-muted-foreground transition-transform ${expanded ? "rotate-180" : ""}`} />
+      </div>
+    </div>
+  );
+}
 
 export function Dashboard() {
   const { user } = useAuth();
@@ -86,24 +114,43 @@ export function Dashboard() {
         ) : (
           <motion.div variants={container} initial="hidden" animate="show" className="space-y-3">
             {notes.map((note) => (
-              <motion.div key={note.id} variants={item} className="glass-card p-4 hover-lift">
-                <div className="flex justify-between items-start">
-                  <div className="flex-1">
-                    <h4 className="font-display font-semibold text-foreground">{note.title}</h4>
-                    <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{note.summary}</p>
-                    {note.tags && (note.tags as string[]).length > 0 && (
-                      <div className="flex gap-1 mt-2 flex-wrap">
-                        {(note.tags as string[]).map((tag, i) => (
-                          <Badge key={i} variant="secondary" className="text-xs">{tag}</Badge>
-                        ))}
+              <motion.div key={note.id} variants={item}>
+                <ExpandableCard
+                  preview={
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <h4 className="font-display font-semibold text-foreground">{note.title}</h4>
+                        <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{note.summary}</p>
                       </div>
-                    )}
-                  </div>
-                  <Button size="sm" variant="ghost" onClick={() => deleteNote.mutate(note.id)} className="text-muted-foreground hover:text-destructive">
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </Button>
-                </div>
-                <p className="text-xs text-muted-foreground mt-2">{new Date(note.created_at).toLocaleDateString()}</p>
+                      <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); deleteNote.mutate(note.id); }} className="text-muted-foreground hover:text-destructive">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
+                    </div>
+                  }
+                >
+                  {note.summary && <p className="text-sm text-foreground/80 mb-3">{note.summary}</p>}
+                  {note.key_facts && (note.key_facts as string[]).length > 0 && (
+                    <div className="mb-3">
+                      <p className="text-xs text-muted-foreground font-medium mb-1.5 uppercase tracking-wider">Key Facts</p>
+                      <ul className="space-y-1">
+                        {(note.key_facts as string[]).map((fact, i) => (
+                          <li key={i} className="text-sm text-foreground/80 flex items-start gap-2">
+                            <span className="text-primary mt-0.5">•</span>
+                            <span>{fact}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {note.tags && (note.tags as string[]).length > 0 && (
+                    <div className="flex gap-1 flex-wrap">
+                      {(note.tags as string[]).map((tag, i) => (
+                        <Badge key={i} variant="secondary" className="text-xs">{tag}</Badge>
+                      ))}
+                    </div>
+                  )}
+                  <p className="text-xs text-muted-foreground mt-2">{new Date(note.created_at).toLocaleDateString()}</p>
+                </ExpandableCard>
               </motion.div>
             ))}
           </motion.div>
@@ -116,19 +163,27 @@ export function Dashboard() {
         ) : (
           <motion.div variants={container} initial="hidden" animate="show" className="space-y-3">
             {events.map((event) => (
-              <motion.div key={event.id} variants={item} className="glass-card p-4 hover-lift">
-                <div className="flex justify-between items-start">
-                  <div>
-                    <h4 className="font-display font-semibold text-foreground">{event.name}</h4>
-                    <div className="flex flex-wrap gap-3 mt-2 text-sm text-muted-foreground">
-                      {event.date && <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{event.date}</span>}
-                      {event.location && <span className="flex items-center gap-1">📍 {event.location}</span>}
+              <motion.div key={event.id} variants={item}>
+                <ExpandableCard
+                  preview={
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <h4 className="font-display font-semibold text-foreground">{event.name}</h4>
+                        <div className="flex flex-wrap gap-3 mt-2 text-sm text-muted-foreground">
+                          {event.date && <span className="flex items-center gap-1"><Calendar className="w-3 h-3" />{event.date}</span>}
+                          {event.location && <span className="flex items-center gap-1">📍 {event.location}</span>}
+                        </div>
+                      </div>
+                      <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); deleteEvent.mutate(event.id); }} className="text-muted-foreground hover:text-destructive">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
                     </div>
-                  </div>
-                  <Button size="sm" variant="ghost" onClick={() => deleteEvent.mutate(event.id)} className="text-muted-foreground hover:text-destructive">
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </Button>
-                </div>
+                  }
+                >
+                  {event.time && <p className="text-sm text-foreground/80">⏰ {event.time}</p>}
+                  {event.description && <p className="text-sm text-foreground/80 mt-1">{event.description}</p>}
+                  <p className="text-xs text-muted-foreground mt-2">{new Date(event.created_at).toLocaleDateString()}</p>
+                </ExpandableCard>
               </motion.div>
             ))}
           </motion.div>
@@ -141,25 +196,32 @@ export function Dashboard() {
         ) : (
           <motion.div variants={container} initial="hidden" animate="show" className="space-y-3">
             {contacts.map((contact) => (
-              <motion.div key={contact.id} variants={item} className="glass-card p-4 hover-lift">
-                <div className="flex justify-between items-start">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center font-display font-bold text-primary">
-                      {contact.name?.charAt(0)}
-                    </div>
-                    <div>
-                      <h4 className="font-display font-semibold text-foreground">{contact.name}</h4>
-                      <p className="text-xs text-muted-foreground">{[contact.title, contact.company].filter(Boolean).join(" · ")}</p>
-                      <div className="flex gap-3 mt-1 text-xs text-muted-foreground">
-                        {contact.phone && <span>{contact.phone}</span>}
-                        {contact.email && <span>{contact.email}</span>}
+              <motion.div key={contact.id} variants={item}>
+                <ExpandableCard
+                  preview={
+                    <div className="flex justify-between items-start">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-primary/20 flex items-center justify-center font-display font-bold text-primary">
+                          {contact.name?.charAt(0)}
+                        </div>
+                        <div>
+                          <h4 className="font-display font-semibold text-foreground">{contact.name}</h4>
+                          <p className="text-xs text-muted-foreground">{[contact.title, contact.company].filter(Boolean).join(" · ")}</p>
+                        </div>
                       </div>
+                      <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); deleteContact.mutate(contact.id); }} className="text-muted-foreground hover:text-destructive">
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </Button>
                     </div>
+                  }
+                >
+                  <div className="space-y-1 text-sm text-foreground/80">
+                    {contact.phone && <p>📞 {contact.phone}</p>}
+                    {contact.email && <p>✉️ {contact.email}</p>}
+                    {contact.company && <p>🏢 {contact.company}</p>}
                   </div>
-                  <Button size="sm" variant="ghost" onClick={() => deleteContact.mutate(contact.id)} className="text-muted-foreground hover:text-destructive">
-                    <Trash2 className="w-3.5 h-3.5" />
-                  </Button>
-                </div>
+                  <p className="text-xs text-muted-foreground mt-2">{new Date(contact.created_at).toLocaleDateString()}</p>
+                </ExpandableCard>
               </motion.div>
             ))}
           </motion.div>
