@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, User, FileText, Trash2, ChevronDown, Pencil, Check, X, Download, FileDown } from "lucide-react";
+import { AskAI } from "@/components/AskAI";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -365,6 +366,7 @@ function ContactCard({ contact, onDelete, onUpdate }: { contact: any; onDelete: 
             <p className="text-xs text-muted-foreground">{new Date(contact.created_at).toLocaleDateString()}</p>
             <Button size="sm" variant="ghost" onClick={startEdit}><Pencil className="w-3.5 h-3.5 mr-1" />Edit</Button>
           </div>
+          <AskAI cardType="contact" cardData={contact} />
         </>
       )}
     </ExpandableCard>
