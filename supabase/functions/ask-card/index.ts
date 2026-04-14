@@ -40,11 +40,15 @@ serve(async (req) => {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "google/gemini-2.5-flash",
+        model: "google/gemini-3-flash-preview",
         messages: [
           {
             role: "system",
-            content: `You are a helpful assistant. The user has a saved ${cardType || "item"} with the following details:\n\n${context}\n\nAnswer the user's follow-up question about this item. Be concise, helpful, and factual. If you don't know, say so.`,
+            content: `You are a knowledgeable assistant integrated into VisionMind, an image analysis app. The user has a saved ${cardType || "item"} with these details:
+
+${context}
+
+Answer the user's follow-up question about this item. Use your knowledge to provide helpful, accurate, and detailed answers. When you reference general knowledge or well-known facts, mention the topic area (e.g. "According to common business etiquette..." or "Based on general event planning best practices..."). Be concise but thorough.`,
           },
           { role: "user", content: question },
         ],
@@ -56,8 +60,10 @@ serve(async (req) => {
         return new Response(JSON.stringify({ error: "Rate limited. Please try again shortly." }), { status: 429, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
       if (response.status === 402) {
-        return new Response(JSON.stringify({ error: "AI credits exhausted." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+        return new Response(JSON.stringify({ error: "AI credits exhausted. Please add funds." }), { status: 402, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
+      const errText = await response.text();
+      console.error("AI error:", response.status, errText);
       return new Response(JSON.stringify({ error: "AI request failed" }), { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
