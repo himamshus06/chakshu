@@ -235,6 +235,11 @@ function NoteCard({ note, onDelete, onUpdate }: { note: any; onDelete: () => voi
         </div>
       ) : (
         <>
+          {note.image_data && (
+            <div className="mb-3 rounded-lg overflow-hidden border border-border/50">
+              <img src={note.image_data} alt="Scanned image" className="w-full max-h-48 object-contain bg-muted/30" />
+            </div>
+          )}
           {note.summary && <p className="text-sm text-foreground/80 mb-3">{note.summary}</p>}
           {note.key_facts && (note.key_facts as string[]).length > 0 && (
             <div className="mb-3">

@@ -149,6 +149,7 @@ export type Database = {
           analysis_id: string | null
           created_at: string
           id: string
+          image_data: string | null
           key_facts: Json | null
           summary: string | null
           tags: string[] | null
@@ -160,6 +161,7 @@ export type Database = {
           analysis_id?: string | null
           created_at?: string
           id?: string
+          image_data?: string | null
           key_facts?: Json | null
           summary?: string | null
           tags?: string[] | null
@@ -171,6 +173,7 @@ export type Database = {
           analysis_id?: string | null
           created_at?: string
           id?: string
+          image_data?: string | null
           key_facts?: Json | null
           summary?: string | null
           tags?: string[] | null

@@ -1,0 +1,1 @@
+ALTER TABLE public.notes ADD COLUMN image_data text;

@@ -25,12 +25,14 @@ const Index = () => {
   const queryClient = useQueryClient();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [currentImageBase64, setCurrentImageBase64] = useState<string | null>(null);
   const [showDashboard, setShowDashboard] = useState(true);
 
   const analyzeImage = useCallback(async (base64: string) => {
     setIsAnalyzing(true);
     setResult(null);
     setShowDashboard(false);
+    setCurrentImageBase64(base64);
     try {
       const { data, error } = await supabase.functions.invoke("analyze-image", {
         body: { imageBase64: base64 },
@@ -92,6 +94,7 @@ const Index = () => {
         summary: data.summary,
         key_facts: data.key_facts,
         tags: data.tags,
+        image_data: currentImageBase64,
         user_id: user.id,
       });
       if (error) throw error;
