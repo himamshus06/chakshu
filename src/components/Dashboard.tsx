@@ -255,6 +255,7 @@ function NoteCard({ note, onDelete, onUpdate }: { note: any; onDelete: () => voi
             <p className="text-xs text-muted-foreground">{new Date(note.created_at).toLocaleDateString()}</p>
             <Button size="sm" variant="ghost" onClick={startEdit}><Pencil className="w-3.5 h-3.5 mr-1" />Edit</Button>
           </div>
+          <AskAI cardType="note" cardData={note} />
         </>
       )}
     </ExpandableCard>
@@ -310,6 +311,7 @@ function EventCard({ event, onDelete, onUpdate }: { event: any; onDelete: () => 
             <p className="text-xs text-muted-foreground">{new Date(event.created_at).toLocaleDateString()}</p>
             <Button size="sm" variant="ghost" onClick={startEdit}><Pencil className="w-3.5 h-3.5 mr-1" />Edit</Button>
           </div>
+          <AskAI cardType="event" cardData={event} />
         </>
       )}
     </ExpandableCard>
