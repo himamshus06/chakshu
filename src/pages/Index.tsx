@@ -25,6 +25,7 @@ const Index = () => {
   const queryClient = useQueryClient();
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [result, setResult] = useState<AnalysisResult | null>(null);
+  const [currentImageBase64, setCurrentImageBase64] = useState<string | null>(null);
   const [showDashboard, setShowDashboard] = useState(true);
 
   const analyzeImage = useCallback(async (base64: string) => {
