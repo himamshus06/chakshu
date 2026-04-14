@@ -94,6 +94,7 @@ const Index = () => {
         summary: data.summary,
         key_facts: data.key_facts,
         tags: data.tags,
+        image_data: currentImageBase64,
         user_id: user.id,
       });
       if (error) throw error;
