@@ -32,6 +32,7 @@ const Index = () => {
     setIsAnalyzing(true);
     setResult(null);
     setShowDashboard(false);
+    setCurrentImageBase64(base64);
     try {
       const { data, error } = await supabase.functions.invoke("analyze-image", {
         body: { imageBase64: base64 },
