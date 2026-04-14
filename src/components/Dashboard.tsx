@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Calendar, User, FileText, Trash2, ChevronDown, Pencil, Check, X, Download, FileDown } from "lucide-react";
+import { AskAI } from "@/components/AskAI";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -254,6 +255,7 @@ function NoteCard({ note, onDelete, onUpdate }: { note: any; onDelete: () => voi
             <p className="text-xs text-muted-foreground">{new Date(note.created_at).toLocaleDateString()}</p>
             <Button size="sm" variant="ghost" onClick={startEdit}><Pencil className="w-3.5 h-3.5 mr-1" />Edit</Button>
           </div>
+          <AskAI cardType="note" cardData={note} />
         </>
       )}
     </ExpandableCard>
@@ -309,6 +311,7 @@ function EventCard({ event, onDelete, onUpdate }: { event: any; onDelete: () => 
             <p className="text-xs text-muted-foreground">{new Date(event.created_at).toLocaleDateString()}</p>
             <Button size="sm" variant="ghost" onClick={startEdit}><Pencil className="w-3.5 h-3.5 mr-1" />Edit</Button>
           </div>
+          <AskAI cardType="event" cardData={event} />
         </>
       )}
     </ExpandableCard>
@@ -365,6 +368,7 @@ function ContactCard({ contact, onDelete, onUpdate }: { contact: any; onDelete: 
             <p className="text-xs text-muted-foreground">{new Date(contact.created_at).toLocaleDateString()}</p>
             <Button size="sm" variant="ghost" onClick={startEdit}><Pencil className="w-3.5 h-3.5 mr-1" />Edit</Button>
           </div>
+          <AskAI cardType="contact" cardData={contact} />
         </>
       )}
     </ExpandableCard>
