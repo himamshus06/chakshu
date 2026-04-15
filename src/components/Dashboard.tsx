@@ -103,6 +103,25 @@ async function shareCard(cardType: string, cardId: string, userId: string) {
   toast.success("Share link copied to clipboard!");
 }
 
+function ShareButton({ cardType, cardId }: { cardType: string; cardId: string }) {
+  const { user } = useAuth();
+  const [sharing, setSharing] = useState(false);
+
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!user) return;
+    setSharing(true);
+    await shareCard(cardType, cardId, user.id);
+    setSharing(false);
+  };
+
+  return (
+    <Button size="sm" variant="ghost" title="Share" onClick={handleShare} disabled={sharing} className="text-muted-foreground">
+      {sharing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Share2 className="w-3.5 h-3.5" />}
+    </Button>
+  );
+}
+
 export function Dashboard() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
