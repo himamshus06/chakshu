@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, User, FileText, Trash2, ChevronDown, Pencil, Check, X, Download, FileDown } from "lucide-react";
+import { Calendar, User, FileText, Trash2, ChevronDown, Pencil, Check, X, Download, FileDown, Share2, Link, Loader2 } from "lucide-react";
 import { AskAI } from "@/components/AskAI";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -69,6 +69,57 @@ function downloadPDF(html: string, filename: string) {
   win.document.write(html);
   win.document.close();
   setTimeout(() => { win.print(); }, 400);
+}
+
+async function shareCard(cardType: string, cardId: string, userId: string) {
+  // Check if already shared
+  const { data: existing } = await supabase
+    .from("shared_cards")
+    .select("share_token")
+    .eq("card_id", cardId)
+    .eq("shared_by", userId)
+    .maybeSingle();
+
+  if (existing) {
+    const url = `${window.location.origin}/shared/${existing.share_token}`;
+    await navigator.clipboard.writeText(url);
+    toast.success("Share link copied!");
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from("shared_cards")
+    .insert({ card_type: cardType, card_id: cardId, shared_by: userId })
+    .select("share_token")
+    .single();
+
+  if (error) {
+    toast.error("Failed to create share link");
+    return;
+  }
+
+  const url = `${window.location.origin}/shared/${data.share_token}`;
+  await navigator.clipboard.writeText(url);
+  toast.success("Share link copied to clipboard!");
+}
+
+function ShareButton({ cardType, cardId }: { cardType: string; cardId: string }) {
+  const { user } = useAuth();
+  const [sharing, setSharing] = useState(false);
+
+  const handleShare = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!user) return;
+    setSharing(true);
+    await shareCard(cardType, cardId, user.id);
+    setSharing(false);
+  };
+
+  return (
+    <Button size="sm" variant="ghost" title="Share" onClick={handleShare} disabled={sharing} className="text-muted-foreground">
+      {sharing ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Share2 className="w-3.5 h-3.5" />}
+    </Button>
+  );
 }
 
 export function Dashboard() {
@@ -217,6 +268,7 @@ function NoteCard({ note, onDelete, onUpdate }: { note: any; onDelete: () => voi
             <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{note.summary}</p>
           </div>
           <div className="flex gap-1">
+            <ShareButton cardType="note" cardId={note.id} />
             <Button size="sm" variant="ghost" title="Download PDF" onClick={(e) => { e.stopPropagation(); downloadPDF(generateNoteHTML(note), `${note.title || "note"}.pdf`); }} className="text-muted-foreground"><FileDown className="w-3.5 h-3.5" /></Button>
             <Button size="sm" variant="ghost" title="Download HTML" onClick={(e) => { e.stopPropagation(); downloadHTML(generateNoteHTML(note), `${(note.title || "note").replace(/\s+/g, "_")}.html`); }} className="text-muted-foreground"><Download className="w-3.5 h-3.5" /></Button>
             <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); onDelete(); }} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-3.5 h-3.5" /></Button>
@@ -287,6 +339,7 @@ function EventCard({ event, onDelete, onUpdate }: { event: any; onDelete: () => 
             </div>
           </div>
           <div className="flex gap-1">
+            <ShareButton cardType="event" cardId={event.id} />
             <Button size="sm" variant="ghost" title="Download PDF" onClick={(e) => { e.stopPropagation(); downloadPDF(generateEventHTML(event), `${event.name || "event"}.pdf`); }} className="text-muted-foreground"><FileDown className="w-3.5 h-3.5" /></Button>
             <Button size="sm" variant="ghost" title="Download HTML" onClick={(e) => { e.stopPropagation(); downloadHTML(generateEventHTML(event), `${(event.name || "event").replace(/\s+/g, "_")}.html`); }} className="text-muted-foreground"><Download className="w-3.5 h-3.5" /></Button>
             <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); onDelete(); }} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-3.5 h-3.5" /></Button>
@@ -343,6 +396,7 @@ function ContactCard({ contact, onDelete, onUpdate }: { contact: any; onDelete: 
             </div>
           </div>
           <div className="flex gap-1">
+            <ShareButton cardType="contact" cardId={contact.id} />
             <Button size="sm" variant="ghost" title="Download PDF" onClick={(e) => { e.stopPropagation(); downloadPDF(generateContactHTML(contact), `${contact.name || "contact"}.pdf`); }} className="text-muted-foreground"><FileDown className="w-3.5 h-3.5" /></Button>
             <Button size="sm" variant="ghost" title="Download HTML" onClick={(e) => { e.stopPropagation(); downloadHTML(generateContactHTML(contact), `${(contact.name || "contact").replace(/\s+/g, "_")}.html`); }} className="text-muted-foreground"><Download className="w-3.5 h-3.5" /></Button>
             <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); onDelete(); }} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-3.5 h-3.5" /></Button>

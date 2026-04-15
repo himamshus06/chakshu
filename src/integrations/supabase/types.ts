@@ -191,6 +191,57 @@ export type Database = {
           },
         ]
       }
+      saved_cards: {
+        Row: {
+          card_type: string
+          created_at: string
+          id: string
+          original_card_id: string
+          saved_by: string
+        }
+        Insert: {
+          card_type: string
+          created_at?: string
+          id?: string
+          original_card_id: string
+          saved_by: string
+        }
+        Update: {
+          card_type?: string
+          created_at?: string
+          id?: string
+          original_card_id?: string
+          saved_by?: string
+        }
+        Relationships: []
+      }
+      shared_cards: {
+        Row: {
+          card_id: string
+          card_type: string
+          created_at: string
+          id: string
+          share_token: string
+          shared_by: string
+        }
+        Insert: {
+          card_id: string
+          card_type: string
+          created_at?: string
+          id?: string
+          share_token?: string
+          shared_by: string
+        }
+        Update: {
+          card_id?: string
+          card_type?: string
+          created_at?: string
+          id?: string
+          share_token?: string
+          shared_by?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
