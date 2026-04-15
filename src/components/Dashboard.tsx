@@ -71,6 +71,38 @@ function downloadPDF(html: string, filename: string) {
   setTimeout(() => { win.print(); }, 400);
 }
 
+async function shareCard(cardType: string, cardId: string, userId: string) {
+  // Check if already shared
+  const { data: existing } = await supabase
+    .from("shared_cards")
+    .select("share_token")
+    .eq("card_id", cardId)
+    .eq("shared_by", userId)
+    .maybeSingle();
+
+  if (existing) {
+    const url = `${window.location.origin}/shared/${existing.share_token}`;
+    await navigator.clipboard.writeText(url);
+    toast.success("Share link copied!");
+    return;
+  }
+
+  const { data, error } = await supabase
+    .from("shared_cards")
+    .insert({ card_type: cardType, card_id: cardId, shared_by: userId })
+    .select("share_token")
+    .single();
+
+  if (error) {
+    toast.error("Failed to create share link");
+    return;
+  }
+
+  const url = `${window.location.origin}/shared/${data.share_token}`;
+  await navigator.clipboard.writeText(url);
+  toast.success("Share link copied to clipboard!");
+}
+
 export function Dashboard() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
