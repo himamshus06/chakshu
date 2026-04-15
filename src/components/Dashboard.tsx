@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Calendar, User, FileText, Trash2, ChevronDown, Pencil, Check, X, Download, FileDown } from "lucide-react";
+import { Calendar, User, FileText, Trash2, ChevronDown, Pencil, Check, X, Download, FileDown, Share2, Link, Loader2 } from "lucide-react";
 import { AskAI } from "@/components/AskAI";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
