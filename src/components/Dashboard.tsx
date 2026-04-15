@@ -249,6 +249,7 @@ function NoteCard({ note, onDelete, onUpdate }: { note: any; onDelete: () => voi
             <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{note.summary}</p>
           </div>
           <div className="flex gap-1">
+            <ShareButton cardType="note" cardId={note.id} />
             <Button size="sm" variant="ghost" title="Download PDF" onClick={(e) => { e.stopPropagation(); downloadPDF(generateNoteHTML(note), `${note.title || "note"}.pdf`); }} className="text-muted-foreground"><FileDown className="w-3.5 h-3.5" /></Button>
             <Button size="sm" variant="ghost" title="Download HTML" onClick={(e) => { e.stopPropagation(); downloadHTML(generateNoteHTML(note), `${(note.title || "note").replace(/\s+/g, "_")}.html`); }} className="text-muted-foreground"><Download className="w-3.5 h-3.5" /></Button>
             <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); onDelete(); }} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-3.5 h-3.5" /></Button>
@@ -319,6 +320,7 @@ function EventCard({ event, onDelete, onUpdate }: { event: any; onDelete: () => 
             </div>
           </div>
           <div className="flex gap-1">
+            <ShareButton cardType="event" cardId={event.id} />
             <Button size="sm" variant="ghost" title="Download PDF" onClick={(e) => { e.stopPropagation(); downloadPDF(generateEventHTML(event), `${event.name || "event"}.pdf`); }} className="text-muted-foreground"><FileDown className="w-3.5 h-3.5" /></Button>
             <Button size="sm" variant="ghost" title="Download HTML" onClick={(e) => { e.stopPropagation(); downloadHTML(generateEventHTML(event), `${(event.name || "event").replace(/\s+/g, "_")}.html`); }} className="text-muted-foreground"><Download className="w-3.5 h-3.5" /></Button>
             <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); onDelete(); }} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-3.5 h-3.5" /></Button>
@@ -375,6 +377,7 @@ function ContactCard({ contact, onDelete, onUpdate }: { contact: any; onDelete: 
             </div>
           </div>
           <div className="flex gap-1">
+            <ShareButton cardType="contact" cardId={contact.id} />
             <Button size="sm" variant="ghost" title="Download PDF" onClick={(e) => { e.stopPropagation(); downloadPDF(generateContactHTML(contact), `${contact.name || "contact"}.pdf`); }} className="text-muted-foreground"><FileDown className="w-3.5 h-3.5" /></Button>
             <Button size="sm" variant="ghost" title="Download HTML" onClick={(e) => { e.stopPropagation(); downloadHTML(generateContactHTML(contact), `${(contact.name || "contact").replace(/\s+/g, "_")}.html`); }} className="text-muted-foreground"><Download className="w-3.5 h-3.5" /></Button>
             <Button size="sm" variant="ghost" onClick={(e) => { e.stopPropagation(); onDelete(); }} className="text-muted-foreground hover:text-destructive"><Trash2 className="w-3.5 h-3.5" /></Button>
